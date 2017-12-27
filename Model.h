@@ -3,6 +3,12 @@
 #include <vector>
 #include <iostream>
 
+enum class FormatTypeModel {
+    OBJ,
+    FBX,
+    STL
+};
+
 struct Vec4{
     float x_, y_, z_, w_;
 
@@ -25,6 +31,8 @@ private:
     Vec3* textureCoord_;
     Vec3* normal_;
 public:
+    Vertex() = default;
+
     Vertex(Vec4* position, Vec3* textureCoord, Vec3* normal)
         : position_(position), textureCoord_(textureCoord), normal_(normal) {
     }
@@ -55,35 +63,47 @@ public:
 };
 
 struct Polygon {
-    std::vector<Vertex> vertices;
+    std::vector<Vertex> vertices_;
+
+    void addVertex(const Vertex& vertex) {
+        vertices_.push_back(vertex);
+    }
 };
 
 struct BoundingBox {
-    Vec3 point;
-    Vec3 size;
+    Vec3 center_;
+    Vec3 size_;
+
+    BoundingBox(const Vec3& center, const Vec3& size)
+        : center_(center), size_(size) {
+    }
 };
 
 class Model {
-protected:
-    std::vector<Vec4> vertexPositions_;
-    std::vector<Vec3> textureCoord_;
-    std::vector<Vec3> vertexNormals_;
-    std::vector<Polygon> vertices_;
-
 public:
-    Model() {
-        std::cout << "Model created" << std::endl;
-    }
+    bool load(FormatTypeModel type, const std::string& filename);
+    bool save(FormatTypeModel type, const std::string& filename) const;
 
-    virtual ~Model() = default;
-    virtual bool load() = 0;
-    virtual bool save(const std::string& filename) const = 0;
-
-    const std::vector<Polygon>& getVertices() const {
-        return vertices_;
+    const std::vector<Polygon>& getPolygons() const {
+        return polygons_;
     }
     
     void normalizeNormals();
     BoundingBox getBoundingBox() const;
+
+private:
+    std::vector<Vec4> vertexPositions_;
+    std::vector<Vec3> textureCoord_;
+    std::vector<Vec3> vertexNormals_;
+    std::vector<Polygon> polygons_;
+
+    bool loadOBJ(const std::string& filename);
+    bool loadOBJVertexPosition(std::stringstream& stream);
+    bool loadOBJTextureCoord(std::stringstream& stream);
+    bool loadOBJNormal(std::stringstream& stream);
+    Vertex loadOBJVertex(std::stringstream& stream);
+    bool loadOBJPolygon(std::stringstream& stream);
+    bool saveOBJ(const std::string& filename) const;
+    void infoLog(std::ostream& o) const;
     
 };

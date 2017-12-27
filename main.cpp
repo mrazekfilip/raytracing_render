@@ -1,10 +1,13 @@
 #include <iostream>
 
 #include "Model.h"
-#include "ModelOBJ.h"
 
 int main() {
     std::cout << "raytracing render" << std::endl;
-    const Model& model = ModelOBJ();
-    return 0; 
+    Model model;
+    bool success = model.load(FormatTypeModel::OBJ, "test_models/man.obj");
+    if (success) {
+        std::cout << "model loaded successfully" << std::endl;
+    }
+    return 0;
 }
